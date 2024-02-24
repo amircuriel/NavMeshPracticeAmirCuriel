@@ -12,7 +12,6 @@ public class NavMeshCharacterController : MonoBehaviour
     [SerializeField] private TMPro.TMP_Text winText;
 
     public int HP { get; set; }
-    public int HP { get; set; }
 
 
 
