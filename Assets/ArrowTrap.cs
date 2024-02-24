@@ -26,21 +26,17 @@ public class ArrowTrap : MonoBehaviour
         if (idamageable != null)
         {
             Vector3 direction = other.transform.position - transform.position;
-            Arrow arrow = Instantiate(Arrow, Vector3.zero, transform.rotation, transform).AddComponent<Arrow>();
+            Arrow arrow = Instantiate(Arrow, transform.position, Quaternion.Inverse(transform.localRotation)).AddComponent<Arrow>();
             arrow.DamageEventData = new DamageEventData(DamageSource.Arrow, Damage, idamageable);
         }
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        
     }
 }
 
 public class Arrow : MonoBehaviour
 {
     public DamageEventData DamageEventData;
-    public float arrowSpeed = 1f;
+    public float arrowSpeed = 7f;
+    private bool hasHit = false;
 
     // Start is called before the first frame update
     void Start()
@@ -51,7 +47,7 @@ public class Arrow : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.Translate(transform.forward * Time.deltaTime * arrowSpeed);
+        transform.Translate(transform.right * Time.deltaTime * arrowSpeed);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -59,8 +55,12 @@ public class Arrow : MonoBehaviour
         IDamageable idamageable = collision.gameObject.GetComponent<IDamageable>();
         if (idamageable != null)
         {
-            EventManager.Instance.EntityDamaged(DamageEventData);
+            if (!hasHit)
+            {
+                EventManager.Instance.EntityDamaged(DamageEventData);
+            }
+            hasHit = true;
         }
-        Destroy(this);
+        Destroy(this.gameObject);
     }
 }

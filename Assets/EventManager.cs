@@ -21,7 +21,7 @@ public class EventManager : GenericSingleton<EventManager>
 
     public void EntityDamaged(DamageEventData data)
     {
-        damageEvent?.Invoke(data);
+        damageEvent.Invoke(data);
     }
 
     public async void RestartGame()

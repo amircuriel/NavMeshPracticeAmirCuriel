@@ -34,19 +34,20 @@ public interface IDamageable
 
 public class NavMeshCharacterController : MonoBehaviour, IDamageable
 {
-    [SerializeField] CharacterAnimationController animationController;
     [SerializeField] private bool isHuman = true;
-    [SerializeField] private Transform finishLine;
-    [SerializeField] private TMPro.TMP_Text winText;
 
-    public int HP { get; set; }
+    private int HealthPoints;
 
-    public UnityEvent<int> onDamaged; //connect with the animation controller
+    private int NewHP = 3;
+
+    public UnityAction<int> onDamaged; //connect with the animation controller
+    public UnityAction<float> onMove;
     public UnityEvent onDeath;
-    public UnityEvent<float> onMove;
 
 
     private NavMeshAgent _agent;
+
+    private bool isdead = false;
 
     void Start()
     {
@@ -62,18 +63,18 @@ public class NavMeshCharacterController : MonoBehaviour, IDamageable
 
     void Update()
     {
-        if (Input.GetMouseButton(0) && isHuman || Input.GetMouseButton(1) && !isHuman)
+        //don't ask, weird bug
+        if (isdead)
+            NewHP = 0;
+        if (!isdead)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray.origin, ray.direction, out hit))
-                _agent.destination = hit.point;
-        }
-
-        onMove?.Invoke(_agent.velocity.magnitude);
-
-        if (Vector3.Distance(transform.position, finishLine.position) < 0.6f)
-        {
-            winText.gameObject.SetActive(true);
+            if (Input.GetMouseButton(0) && isHuman || Input.GetMouseButton(1) && !isHuman)
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(ray.origin, ray.direction, out hit))
+                    _agent.destination = hit.point;
+            }
+            onMove?.Invoke(_agent.velocity.magnitude);
         }
     }
 
@@ -81,12 +82,15 @@ public class NavMeshCharacterController : MonoBehaviour, IDamageable
     {
         if (eventData.damagedEntity == (IDamageable)this)
         {
-            HP -= eventData.damage;
-            onDamaged?.Invoke(HP);
-            if (HP <= 0)
+            NewHP -= eventData.damage;
+            if (NewHP <= 0)
             {
-                onDeath?.Invoke();
+                isdead = true;
+                NewHP = 0;
+                onDeath.Invoke();
             }
+            onDamaged.Invoke(NewHP);
+            _agent.ResetPath();
         }
     }
 }
