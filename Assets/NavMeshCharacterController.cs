@@ -32,13 +32,11 @@ public interface IDamageable
     public void TakeDamage(DamageEventData eventData);
 }
 
+[DisallowMultipleComponent]
 public class NavMeshCharacterController : MonoBehaviour, IDamageable
 {
     [SerializeField] private bool isHuman = true;
-
-    private int HealthPoints;
-
-    private int NewHP = 3;
+    private int HP = 3;
 
     public UnityAction<int> onDamaged; //connect with the animation controller
     public UnityAction<float> onMove;
@@ -46,8 +44,6 @@ public class NavMeshCharacterController : MonoBehaviour, IDamageable
 
 
     private NavMeshAgent _agent;
-
-    private bool isdead = false;
 
     void Start()
     {
@@ -63,10 +59,7 @@ public class NavMeshCharacterController : MonoBehaviour, IDamageable
 
     void Update()
     {
-        //don't ask, weird bug
-        if (isdead)
-            NewHP = 0;
-        if (!isdead)
+        if (HP > 0)
         {
             if (Input.GetMouseButton(0) && isHuman || Input.GetMouseButton(1) && !isHuman)
             {
@@ -82,15 +75,13 @@ public class NavMeshCharacterController : MonoBehaviour, IDamageable
     {
         if (eventData.damagedEntity == (IDamageable)this)
         {
-            NewHP -= eventData.damage;
-            if (NewHP <= 0)
-            {
-                isdead = true;
-                NewHP = 0;
-                onDeath.Invoke();
-            }
-            onDamaged.Invoke(NewHP);
+            HP -= eventData.damage;
+            onDamaged.Invoke(HP);
             _agent.ResetPath();
+            if (HP <= 0)
+            {
+                onDeath?.Invoke();
+            }
         }
     }
 }

@@ -24,9 +24,14 @@ public class EventManager : GenericSingleton<EventManager>
         damageEvent.Invoke(data);
     }
 
-    public async void RestartGame()
+    public void RestartGame()
     {
-        await System.Threading.Tasks.Task.Delay(5000);
+        StartCoroutine(Restart());
+    }
+
+    private IEnumerator Restart()
+    {
+        yield return new WaitForSeconds(3f);
         UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().path);
     }
 }
