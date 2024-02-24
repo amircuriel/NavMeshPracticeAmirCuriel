@@ -2,22 +2,26 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Events;
 
 public class NavMeshCharacterController : MonoBehaviour
 {
+    [SerializeField] CharacterAnimationController animationController;
     [SerializeField] private bool isHuman = true;
     [SerializeField] private Transform finishLine;
     [SerializeField] private TMPro.TMP_Text winText;
+
+    public int HP { get; set; }
+    public int HP { get; set; }
+
+
+
+
     private NavMeshAgent _agent;
-    private Animator _animator;
 
     void Start()
     {
         _agent = GetComponent<NavMeshAgent>();
-        if (isHuman)
-        {
-            _animator = GetComponent<Animator>();
-        }
         hit = new RaycastHit();
     }
 
@@ -33,14 +37,13 @@ public class NavMeshCharacterController : MonoBehaviour
                 _agent.destination = hit.point;
         }
 
-        if (isHuman)
-        {
-            _animator.SetFloat("Speed", _agent.velocity.magnitude);
-        }
+        animationController.SetSpeed(_agent.velocity.magnitude);
 
         if (Vector3.Distance(transform.position, finishLine.position) < 0.6f)
         {
             winText.gameObject.SetActive(true);
         }
     }
+
+
 }
