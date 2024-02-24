@@ -4,7 +4,35 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.Events;
 
-public class NavMeshCharacterController : MonoBehaviour
+public enum DamageSource
+{
+    Arrow,
+    Lava,
+    FallDamage,
+    Misc
+}
+
+[System.Serializable]
+public struct DamageEventData
+{
+    public DamageSource damageSource;
+    public int damage;
+    public IDamageable damagedEntity;
+
+    public DamageEventData(DamageSource source, int damage, IDamageable entity)
+    {
+        damageSource = source;
+        this.damage = damage; 
+        damagedEntity = entity;
+    }
+}
+
+public interface IDamageable
+{
+    public void TakeDamage(DamageEventData eventData);
+}
+
+public class NavMeshCharacterController : MonoBehaviour, IDamageable
 {
     [SerializeField] CharacterAnimationController animationController;
     [SerializeField] private bool isHuman = true;
@@ -13,13 +41,18 @@ public class NavMeshCharacterController : MonoBehaviour
 
     public int HP { get; set; }
 
-
+    public UnityEvent<int> onDamaged; //connect with the animation controller
+    public UnityEvent onDeath;
+    public UnityEvent<float> onMove;
 
 
     private NavMeshAgent _agent;
 
     void Start()
     {
+        EventManager.Instance.damageEvent += TakeDamage;
+
+
         _agent = GetComponent<NavMeshAgent>();
         hit = new RaycastHit();
     }
@@ -36,7 +69,7 @@ public class NavMeshCharacterController : MonoBehaviour
                 _agent.destination = hit.point;
         }
 
-        animationController.SetSpeed(_agent.velocity.magnitude);
+        onMove?.Invoke(_agent.velocity.magnitude);
 
         if (Vector3.Distance(transform.position, finishLine.position) < 0.6f)
         {
@@ -44,5 +77,16 @@ public class NavMeshCharacterController : MonoBehaviour
         }
     }
 
-
+    public void TakeDamage(DamageEventData eventData)
+    {
+        if (eventData.damagedEntity == (IDamageable)this)
+        {
+            HP -= eventData.damage;
+            onDamaged?.Invoke(HP);
+            if (HP <= 0)
+            {
+                onDeath?.Invoke();
+            }
+        }
+    }
 }
