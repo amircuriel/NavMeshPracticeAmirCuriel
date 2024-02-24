@@ -26,7 +26,7 @@ public class NavMeshCharacterController : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && isHuman || Input.GetMouseButtonDown(1) && !isHuman)
+        if (Input.GetMouseButton(0) && isHuman || Input.GetMouseButton(1) && !isHuman)
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray.origin, ray.direction, out hit))
